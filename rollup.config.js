@@ -91,7 +91,9 @@ async function main() {
                 'pixi.js': ['settings', 'Filter']
             }
         }),
-        resolve(),
+        resolve({
+            preferBuiltins:false
+        }),
         string({
             include: [
                 '**/*.frag',

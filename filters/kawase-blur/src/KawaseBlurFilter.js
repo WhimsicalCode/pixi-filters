@@ -1,7 +1,8 @@
 import {vertex} from '@tools/fragments';
 import fragment from './kawase-blur.frag';
 import fragmentClamp from './kawase-blur-clamp.frag';
-import * as PIXI from 'pixi.js';
+import * as core from '@pixi/core';
+import * as math from '@pixi/math';
 
 /**
  * A much faster blur than Gaussian blur, but more complicated to use.<br>
@@ -9,20 +10,20 @@ import * as PIXI from 'pixi.js';
  *
  * @see https://software.intel.com/en-us/blogs/2014/07/15/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms
  * @class
- * @extends PIXI.Filter
- * @memberof PIXI.filters
+ * @extends math.Filter
+ * @memberof math.filters
  * @param {number|number[]} [blur=4] - The blur of the filter. Should be greater than `0`. If
  *        value is an Array, setting kernels.
  * @param {number} [quality=3] - The quality of the filter. Should be an integer greater than `1`.
  * @param {boolean} [clamp=false] - Clamp edges, useful for removing dark edges
  *        from fullscreen filters or bleeding to the edge of filterArea.
  */
-export default class KawaseBlurFilter extends PIXI.Filter {
+export default class KawaseBlurFilter extends core.Filter {
     constructor(blur = 4, quality = 3, clamp = false) {
         super(vertex, clamp ? fragmentClamp : fragment);
         this.uniforms.uOffset = new Float32Array(2);
 
-        this._pixelSize = new PIXI.Point();
+        this._pixelSize = new math.Point();
         this.pixelSize = 1;
         this._clamp = clamp;
         this._kernels = null;
@@ -53,7 +54,8 @@ export default class KawaseBlurFilter extends PIXI.Filter {
             filterManager.applyFilter(this, input, output, clear);
         }
         else {
-            const renderTarget = filterManager.getRenderTarget(true);
+            const renderTarget = filterManager.getFilterTexture();
+            renderTarget.clear();
 
             let source = input;
             let target = renderTarget;
@@ -76,7 +78,7 @@ export default class KawaseBlurFilter extends PIXI.Filter {
             this.uniforms.uOffset[1] = offset * uvY;
             filterManager.applyFilter(this, source, output, clear);
 
-            filterManager.returnRenderTarget(renderTarget);
+            filterManager.returnFilterTexture(renderTarget);
         }
     }
 
@@ -138,7 +140,7 @@ export default class KawaseBlurFilter extends PIXI.Filter {
     /**
      * Sets the pixel size of the filter. Large size is blurrier. For advanced usage.
      *
-     * @member {PIXI.Point|number[]}
+     * @member {math.Point|number[]}
      * @default [1, 1]
      */
     set pixelSize(value) {
@@ -150,7 +152,7 @@ export default class KawaseBlurFilter extends PIXI.Filter {
             this._pixelSize.x = value[0];
             this._pixelSize.y = value[1];
         }
-        else if (value instanceof PIXI.Point) {
+        else if (value instanceof math.Point) {
             this._pixelSize.x = value.x;
             this._pixelSize.y = value.y;
         }

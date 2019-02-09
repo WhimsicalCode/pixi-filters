@@ -27,10 +27,10 @@
     "@pixi/filter-kawase-blur": "PIXI.filters"
   },
   "peerDependencies": {
-    "pixi.js": ">=4.5.0"
+    "@pixi/core": ">=5.0.0-rc"
   },
   "dependencies": {
-    "@pixi/filter-kawase-blur": "^2.7.0"
+    "@pixi/filter-kawase-blur": "file:../kawase-blur"
   },
   "devDependencies": {
     "@tools/fragments": "^2.0.0"

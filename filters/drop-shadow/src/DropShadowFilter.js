@@ -1,14 +1,17 @@
 import {KawaseBlurFilter} from '@pixi/filter-kawase-blur';
 import {vertex} from '@tools/fragments';
 import fragment from './dropshadow.frag';
-import * as PIXI from 'pixi.js';
+import { Filter }  from '@pixi/core';
+import { Point, Matrix, DEG_TO_RAD } from '@pixi/math';
+import { settings } from '@pixi/settings';
+import * as utils from '@pixi/utils';
 
 /**
  * Drop shadow filter.<br>
  * ![original](../tools/screenshots/dist/original.png)![filter](../tools/screenshots/dist/drop-shadow.png)
  * @class
- * @extends PIXI.Filter
- * @memberof PIXI.filters
+ * @extends Filter
+ * @memberof filters
  * @param {object} [options] Filter options
  * @param {number} [options.rotation=45] The angle of the shadow in degrees.
  * @param {number} [options.distance=5] Distance of shadow
@@ -18,10 +21,10 @@ import * as PIXI from 'pixi.js';
  * @param {number} [options.blur=2] - Sets the strength of the Blur properties simultaneously
  * @param {number} [options.quality=3] - The quality of the Blur filter.
  * @param {number[]} [options.kernels=null] - The kernels of the Blur filter.
- * @param {number|number[]|PIXI.Point} [options.pixelSize=1] - the pixelSize of the Blur filter.
- * @param {number} [options.resolution=PIXI.settings.RESOLUTION] - The resolution of the Blur filter.
+ * @param {number|number[]|Point} [options.pixelSize=1] - the pixelSize of the Blur filter.
+ * @param {number} [options.resolution=settings.RESOLUTION] - The resolution of the Blur filter.
  */
-export default class DropShadowFilter extends PIXI.Filter {
+export default class DropShadowFilter extends Filter {
     constructor(options) {
 
         // Fallback support for ctor: (rotation, distance, blur, color, alpha)
@@ -53,14 +56,14 @@ export default class DropShadowFilter extends PIXI.Filter {
             blur: 2,
             quality: 3,
             pixelSize: 1,
-            resolution: PIXI.settings.RESOLUTION,
+            resolution: settings.RESOLUTION,
         }, options);
 
         super();
 
         const { kernels, blur, quality, pixelSize, resolution } = options;
 
-        this._tintFilter = new PIXI.Filter(vertex, fragment);
+        this._tintFilter = new Filter(vertex, fragment);
         this._tintFilter.uniforms.color = new Float32Array(4);
         this._tintFilter.resolution = resolution;
         this._blurFilter = kernels ?
@@ -70,7 +73,7 @@ export default class DropShadowFilter extends PIXI.Filter {
         this.pixelSize = pixelSize;
         this.resolution = resolution;
 
-        this.targetTransform = new PIXI.Matrix();
+        this.targetTransform = new Matrix();
 
         const { shadowOnly, rotation, distance, alpha, color } = options;
 
@@ -84,7 +87,7 @@ export default class DropShadowFilter extends PIXI.Filter {
     }
 
     apply(filterManager, input, output, clear) {
-        const target = filterManager.getRenderTarget();
+        const target = filterManager.getFilterTexture();
 
         target.transform = this.targetTransform;
         this._tintFilter.apply(filterManager, input, target, true);
@@ -96,7 +99,7 @@ export default class DropShadowFilter extends PIXI.Filter {
             filterManager.applyFilter(this, input, output, false);
         }
 
-        filterManager.returnRenderTarget(target);
+        filterManager.returnFilterTexture(target);
     }
 
     /**
@@ -120,7 +123,7 @@ export default class DropShadowFilter extends PIXI.Filter {
      * The resolution of the filter.
      *
      * @member {number}
-     * @default PIXI.settings.RESOLUTION
+     * @default settings.RESOLUTION
      */
     get resolution() {
         return this._resolution;
@@ -156,10 +159,10 @@ export default class DropShadowFilter extends PIXI.Filter {
      * @default 2
      */
     get rotation() {
-        return this.angle / PIXI.DEG_TO_RAD;
+        return this.angle / DEG_TO_RAD;
     }
     set rotation(value) {
-        this.angle = value * PIXI.DEG_TO_RAD;
+        this.angle = value * DEG_TO_RAD;
         this._updateTargetTransform();
     }
 
@@ -181,10 +184,10 @@ export default class DropShadowFilter extends PIXI.Filter {
      * @default 0x000000
      */
     get color() {
-        return PIXI.utils.rgb2hex(this._tintFilter.uniforms.color);
+        return utils.rgb2hex(this._tintFilter.uniforms.color);
     }
     set color(value) {
-        PIXI.utils.hex2rgb(value, this._tintFilter.uniforms.color);
+        utils.hex2rgb(value, this._tintFilter.uniforms.color);
     }
 
     /**
@@ -228,7 +231,7 @@ export default class DropShadowFilter extends PIXI.Filter {
     /**
      * Sets the pixelSize of the Kawase Blur filter
      *
-     * @member {number|number[]|PIXI.Point}
+     * @member {number|number[]|Point}
      * @default 1
      */
     get pixelSize() {

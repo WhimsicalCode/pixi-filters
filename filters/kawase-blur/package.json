@@ -21,7 +21,7 @@
     "types.d.ts"
   ],
   "peerDependencies": {
-    "pixi.js": ">=4.5.0"
+    "@pixi/core": ">=5.0.0-rc"
   },
   "devDependencies": {
     "@tools/fragments": "^2.0.0"
